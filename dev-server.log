@@ -1,0 +1,14 @@
+
+> suma-market@1.0.0 dev
+> next dev
+
+  ▲ Next.js 14.2.23
+  - Local:        http://localhost:3000
+  - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 4.4s
+ ○ Compiling / ...
+ ✓ Compiled / in 5.1s (606 modules)
+ GET / 200 in 5883ms
+ ✓ Compiled in 871ms (297 modules)

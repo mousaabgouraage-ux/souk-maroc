@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String
+  slug      String    @unique
+  imageUrl  String?
+  isVisible Boolean   @default(true)
+  products  Product[]
+  createdAt DateTime  @default(now())
+}
+
+model Product {
+  id         Int            @id @default(autoincrement())
+  name       String
+  slug       String         @unique
+  description String?
+  price      Float
+  oldPrice   Float?
+  imageUrl   String?
+  inStock    Boolean        @default(true)
+  stock      Int            @default(0)
+  featured   Boolean        @default(false)
+  isNew      Boolean        @default(false)
+  isVisible  Boolean        @default(true)
+  color      String?
+  size       String?
+  options    String?
+  categoryId Int
+  category   Category       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  images     ProductImage[]
+  orderItems OrderItem[]
+  createdAt  DateTime       @default(now())
+}
+
+model ProductImage {
+  id        Int     @id @default(autoincrement())
+  url       String
+  isMain    Boolean @default(false)
+  position  Int     @default(0)
+  productId Int
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model Order {
+  id            Int         @id @default(autoincrement())
+  customerName  String
+  phone         String
+  address       String
+  city          String
+  notes         String?
+  status        String      @default("PENDING")
+  total         Float
+  deliveryFee   Float       @default(0)
+  paymentMethod String      @default("COD")
+  createdAt     DateTime    @default(now())
+  items         OrderItem[]
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  quantity  Int
+  price     Float
+  productId Int
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderId   Int
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model StoreSetting {
+  id    Int    @id @default(autoincrement())
+  key   String @unique
+  value String
+}

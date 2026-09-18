@@ -1,0 +1,14 @@
+node_modules
+.next
+.git
+.gitignore
+*\.md
+Dockerfile
+docker-compose.yml
+.env
+.env.local
+.env*.local
+dev-server.log
+public/uploads/*
+prisma/dev.db
+prisma/dev.db-journal
