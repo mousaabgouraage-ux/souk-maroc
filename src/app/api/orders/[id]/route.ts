@@ -3,13 +3,13 @@ import { prisma } from "@/lib/prisma";
 import { requireAdminApi } from "@/lib/auth";
 import { ORDER_STATUSES } from "@/lib/types";
 
-interface Params {
-  params: { id: string };
-}
-
-export async function GET(request: NextRequest, { params }: Params) {
+export async function GET(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
   try {
-    const id = parseInt(params.id);
+    const { id: idRaw } = await context.params;
+    const id = parseInt(idRaw);
     if (isNaN(id)) {
       return NextResponse.json({ error: "معرّف غير صالح" }, { status: 400 });
     }
@@ -30,12 +30,16 @@ export async function GET(request: NextRequest, { params }: Params) {
   }
 }
 
-export async function PUT(request: NextRequest, { params }: Params) {
+export async function PUT(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
   const denied = await requireAdminApi(request);
   if (denied) return denied;
 
   try {
-    const id = parseInt(params.id);
+    const { id: idRaw } = await context.params;
+    const id = parseInt(idRaw);
     if (isNaN(id)) {
       return NextResponse.json({ error: "معرّف غير صالح" }, { status: 400 });
     }

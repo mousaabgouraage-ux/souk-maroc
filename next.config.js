@@ -6,6 +6,7 @@ const nextConfig = {
       { protocol: 'http', hostname: '**' },
     ],
   },
+  agentRules: false,
 }
 
 module.exports = nextConfig

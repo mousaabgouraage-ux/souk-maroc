@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdminApi } from "@/lib/auth";
 
-interface Params {
-  params: { id: string };
-}
-
-export async function GET(request: NextRequest, { params }: Params) {
-  const id = Number(params.id);
+export async function GET(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  const { id: idRaw } = await context.params;
+  const id = Number(idRaw);
   const product = await prisma.product.findUnique({
     where: { id },
     include: {
@@ -21,12 +21,16 @@ export async function GET(request: NextRequest, { params }: Params) {
   return NextResponse.json(product);
 }
 
-export async function PUT(request: NextRequest, { params }: Params) {
+export async function PUT(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
   const denied = await requireAdminApi(request);
   if (denied) return denied;
 
   try {
-    const id = parseInt(params.id);
+    const { id: idRaw } = await context.params;
+    const id = parseInt(idRaw);
     if (isNaN(id)) {
       return NextResponse.json({ error: "معرّف غير صالح" }, { status: 400 });
     }
@@ -115,12 +119,16 @@ export async function PUT(request: NextRequest, { params }: Params) {
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: Params) {
+export async function DELETE(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
   const denied = await requireAdminApi(request);
   if (denied) return denied;
 
   try {
-    const id = parseInt(params.id);
+    const { id: idRaw } = await context.params;
+    const id = parseInt(idRaw);
     if (isNaN(id)) {
       return NextResponse.json({ error: "معرّف غير صالح" }, { status: 400 });
     }

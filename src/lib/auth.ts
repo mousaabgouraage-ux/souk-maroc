@@ -90,7 +90,8 @@ async function verifyAdminToken(token: string): Promise<boolean> {
 /** هل جلسة الأدمن الحالية صالحة؟ (تقرأ الكوكي httpOnly) */
 export async function getAdminSession(): Promise<boolean> {
   try {
-    const token = cookies().get(COOKIE_NAME)?.value;
+    const store = await cookies();
+    const token = store.get(COOKIE_NAME)?.value;
     if (!token) return false;
     return verifyAdminToken(token);
   } catch {

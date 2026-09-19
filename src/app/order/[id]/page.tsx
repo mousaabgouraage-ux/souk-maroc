@@ -22,9 +22,10 @@ const statusColors: Record<string, string> = {
 export default async function OrderConfirmationPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const orderId = parseInt(params.id);
+  const { id: idRaw } = await params;
+  const orderId = parseInt(idRaw);
   if (isNaN(orderId)) notFound();
 
   const order = await prisma.order.findUnique({

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import ProductForm from "@/components/admin/ProductForm";
 import { Loader2 } from "lucide-react";
@@ -21,9 +21,10 @@ interface ProductData {
 export default function EditProductPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const router = useRouter();
+  const { id: paramId } = use(params);
   const [product, setProduct] = useState<ProductData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -32,7 +33,7 @@ export default function EditProductPage({
       .then((r) => r.json())
       .then((data) => {
         const found = data.find(
-          (p: { id: number }) => p.id === parseInt(params.id)
+          (p: { id: number }) => p.id === parseInt(paramId)
         );
         if (!found) {
           alert("المنتج غير موجود");
@@ -53,7 +54,7 @@ export default function EditProductPage({
         });
         setLoading(false);
       });
-  }, [params.id, router]);
+  }, [paramId, router]);
 
   if (loading) {
     return (

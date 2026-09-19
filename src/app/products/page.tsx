@@ -4,12 +4,13 @@ import Link from "next/link";
 import { Search } from "lucide-react";
 
 interface Props {
-  searchParams: { category?: string; search?: string };
+  searchParams: Promise<{ category?: string; search?: string }>;
 }
 
 export default async function ProductsPage({ searchParams }: Props) {
-  const category = searchParams.category || "";
-  const search = searchParams.search || "";
+  const { category: categoryRaw, search: searchRaw } = await searchParams;
+  const category = categoryRaw || "";
+  const search = searchRaw || "";
 
   const categories = await prisma.category.findMany({
     orderBy: { name: "asc" },

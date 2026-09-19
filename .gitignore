@@ -29,6 +29,7 @@ yarn-error.log*
 .pnpm-debug.log*
 dev-server.log
 prod-server.log
+dev-server*.log
 
 # env files
 .env
