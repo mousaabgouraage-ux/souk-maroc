@@ -1,113 +1,155 @@
-# سوما ماركت (SuMa MarKet)
+# 🛍️ سوما ماركت — SuMa MarKet
 
-متجر إلكتروني كامل باللغة العربية مع الدفع عند الاستلام.
+متجر إلكتروني متكامل بالأدمن **SuMa MarKet** مبنٍ بـ **Next.js 14 (App Router)** + **TypeScript** + **Tailwind CSS** + **Prisma** مع قاعدة بيانات **PostgreSQL** سحابية (Neon).
 
-## المميزات
+> مشروع مغربي للتجارة الإلكترونية بخيار **الدفع عند الاستلام (COD)** ولوحة تحكم إدارية كاملة بالعربية.
 
-- واجهة متجر عربية (RTL) بتصميم عصري
-- تصفح المنتجات مع فلترة حسب الفئة والبحث
-- سلة تسوق محفوظة في المتصفح
-- إتمام طلب بدون تسجيل (الدفع عند الاستلام)
-- صفحة تتبع حالة الطلب
-- لوحة تحكم إدارية كاملة:
-  - إضافة/تعديل/حذف المنتجات مع رفع الصور
-  - إدارة الفئات
-  - إدارة الطلبات وتحديث حالتها (قيد الانتظار، مؤكد، شحن، تم التوصيل)
-  - إحصائيات المبيعات
+---
 
-## التقنيات
+## ✨ المميزات
 
-- Next.js 14 (App Router)
-- TypeScript
-- Tailwind CSS
-- Prisma ORM + SQLite (يمكن التبديل لـ PostgreSQL)
-- JWT للتحقق من المدير
+| الواجهة (Storefront) | لوحة الإدارة (Admin) |
+|----------------------|----------------------|
+| 🏠 صفحة رئيسية مع المنتجات المميزة | 🔐 دخول آمن (JWT + كوكي httpOnly) |
+| 🗂️ تصفح حسب التصنيفات | 📦 إدارة المنتجات (إضافة/تعديل/حذف نهائي) |
+| 🖼️ صور متعددة للمنتج + ألوان ومقاسات | 🗃️ إدارة التصنيفات |
+| 🛒 سلة تسوق على المتصفح | 📋 إدارة الطلبات وتحديث الحالة |
+| 🚚 صفحة طلب بالدفع عند الاستلام (COD) | ⚙️ إعدادات المتجر (الشحن/المدن) |
+| 📱 تصميم متجاوب (موبايل/حاسوب) | 🖼️ رفع صور مرفوعات |
 
-## طريقة التشغيل
+---
 
-### 1. تثبيت الاعتماديات
+## 🧑‍💻 التقنيات
 
+- **Next.js 14** (App Router) — React 18, Server Components
+- **TypeScript** 5.x
+- **Tailwind CSS** 3.x
+- **Prisma ORM** 5.x + **PostgreSQL** (Neon)
+- **jose** — JWT للتوقيع الآمن (HS256, صلاحية 7 أيام)
+- **Zod** — التحقق من صحة النماذج
+- **bcryptjs** — (متوفر) تشفير كلمات المرور
+- **Docker** — نشر حاويات متعدد المراحل
+
+---
+
+## 📁 هيكل المشروع
+
+```
+.
+├── prisma/
+│   ├── schema.prisma      # مخطط قاعدة البيانات
+│   └── seed.ts            # بيانات أولية (تصنيفات ومنتجات تجريبية)
+├── public/uploads/        # الصور المرفوعة (حجم دائم في Docker)
+├── src/
+│   ├── app/
+│   │   ├── (storefront)   # الصفحة الرئيسية، المنتجات، السلة، الطلب
+│   │   ├── admin/         # لوحة الإدارة (protected)
+│   │   └── api/           # REST endpoints (protected)
+│   ├── components/        # مكونات الواجهة ولوحة الإدارة
+│   └── lib/
+│       ├── auth.ts        # مصادقة الأدمن (JWT, CSRF, fail-closed)
+│       ├── prisma.ts      # اتصال Prisma (مفرد عبر dev/prod)
+│       ├── settings.ts    # إعدادات المتجر
+│       └── types.ts       # الأنواع المشتركة
+├── Dockerfile            # صورة نشر متعددة المراحل
+├── docker-compose.yml    # تشغيل محلي بالحاوية
+└── .env.example          # قالب الإعدادات (بدون أسرار)
+```
+
+---
+
+## 🚀 التشغيل المحلي
+
+### 1) المتطلبات
+- Node.js **20+**
+- حساب على [Neon](https://neon.tech) (PostgreSQL مجاني) — أو أي PostgreSQL
+
+### 2) الإعداد
 ```bash
+# تثبيت الاعتمادات
 npm install
+
+# إنشاء ملف الإعدادات من القالب
+cp .env.example .env
 ```
 
-### 2. إعداد قاعدة البيانات (SQLite محلياً)
+ثم املأ `.env`:
 
-```bash
-npm run db:push
-npm run db:seed
+```env
+DATABASE_URL="postgresql://USER:PASSWORD@HOST-POOLER.region.neon.tech/DB?sslmode=require&connection_limit=1"
+DIRECT_URL="postgresql://USER:PASSWORD@HOST-DIRECT.region.neon.tech/DB?sslmode=require"
+
+ADMIN_EMAIL="admin@sumamarket.com"
+ADMIN_USERNAME="admin"
+ADMIN_PASSWORD="كلمة-مرور-قوية"
+
+# مفتاح توقيع الجلسات (ولّد قيماً عشوائية)
+AUTH_SECRET="$(node -e "console.log(require('crypto').randomBytes(48).toString('hex'))")"
+
+NODE_ENV="development"
 ```
 
-أو كلاهما معاً:
+> ⚠️ **لا ترفع `.env` أبداً إلى git** — إنه مستبعد تلقائياً.
 
+### 3) تجهيز قاعدة البيانات
 ```bash
+# توليد Prisma Client + إنشاء الجداول + البيانات الأولية
 npm run setup
 ```
 
-### 3. تشغيل المشروع
-
+### 4) التشغيل
 ```bash
-npm run dev
+npm run dev        # التطوير على http://localhost:3000
+npm run build && npm start   # الإنتاج
 ```
 
-ثم افتح `http://localhost:3000`
+**لوحة الإدارة:** http://localhost:3000/admin (باستخدام `ADMIN_EMAIL`/`ADMIN_USERNAME` + `ADMIN_PASSWORD`)
 
-## الحساب الإداري
+---
 
-| الحقل | القيمة |
-|---|---|
-| رابط لوحة التحكم | `http://localhost:3000/admin/login` |
-| كلمة المرور | `suma123` |
+## 📦 النشر
 
-> **تغيير كلمة المرور:** عدّل قيمة `ADMIN_PASSWORD` في ملف `.env.local`
+### الخيار أ — Railway / Render (موصى به)
+المشروع جاهز للرفع كحاوية Docker. تحتاج فقط إلى:
 
-## بنية المشروع
+1. ربط المستودع في المنصة (GitHub).
+2. ضبط env vars: `DATABASE_URL`, `DIRECT_URL`, `ADMIN_EMAIL`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `AUTH_SECRET`.
+3. إضافة **Volume** دائم إلى مسار `/app/public/uploads` (للصور المرفوعة).
+4. ترقية المشروع — ستحصل على رابط HTTPS عام دائم.
 
-```
-src/
-├── app/
-│   ├── page.tsx              ← الصفحة الرئيسية
-│   ├── products/             ← صفحة المنتجات + تفاصيل المنتج
-│   ├── cart/                 ← سلة التسوق
-│   ├── checkout/             ← إتمام الطلب
-│   ├── order/[id]/           ← تتبع الطلب
-│   ├── admin/                ← لوحة التحكم
-│   └── api/                  ← واجهات REST (المنتجات، الفئات، الطلبات، ...)
-├── components/
-│   ├── Header.tsx            ← الشريط العلوي
-│   ├── Footer.tsx            ← التذييل
-│   ├── ProductCard.tsx       ← بطاقة المنتج
-│   └── admin/                ← مكونات لوحة التحكم
-└── lib/
-    ├── prisma.ts             ← عميل قاعدة البيانات
-    ├── cart.ts               ← أدوات سلة التسوق
-    ├── auth.ts               ← مصادقة المدير
-    └── types.ts              ← الأنواع المشتركة
-```
-
-## التبديل إلى PostgreSQL
-
-1. قم بتثبيت PostgreSQL محلياً أو استخدم خدمة سحابية
-2. عدّل `prisma/schema.prisma`: غيّر `provider = "sqlite"` إلى `provider = "postgresql"`
-3. عدّل `DATABASE_URL` في ملف `.env.local` برابط قاعدة البيانات
-4. شغّل:
-
+### الخيار ب — Docker محلياً
 ```bash
-npm run db:push
-npm run db:seed
+docker compose up -d --build
+# المتجر على http://localhost:3000
 ```
 
-## رفع الصور
+> تقوم الحاوية بتطبيق مخطط قاعدة البيانات وتشغيل خادم `next start` في الإنتاج مع استقبال الإعدادات من متغيرات البيئة.
 
-الصور المرفوعة من لوحة التحكم تُحفظ في مجلد `public/uploads/`. في البيئة الإنتاجية يُفضل استخدام خدمة تخزين مثل S3 أو Cloudinary.
+---
 
-## النشر
+## 🔐 الأمان
 
-الموقع جاهز للنشر على Vercel أو أي استضافة تدعم Next.js:
+- **لا أسرار في الملفات منشورة** — جميع الإعدادات من متغيرات البيئة.
+- **فشل مضمون (Fail-closed)** في الإنتاج: النظام يتوقف إن غاب أي متغير أساسي.
+- مصادقة **JWT** في كوكي `httpOnly` + `SameSite=Lax` + `Secure` في الإنتاج.
+- حماية **CSRF** عبر فحص `Origin` على طرق الكتابة.
+- مقارنة كلمات مرور مقاومة لهجمات التوقيت (`timingSafeEqualStr`).
+- `AUTH_SECRET` مستقل عن كلمة المرور، مولّد عشوائياً لكل نشر.
 
-```bash
-npm run build
-npm run start
-```
+---
 
-ملاحظة: مع SQLite المحلي، يجب ضمان بقاء ملف قاعدة البيانات عند إعادة النشر. للاستخدام الإنتاجي يفضل PostgreSQL.
+## 🗄️ قاعدة البيانات
+
+- بُنية البيانات في `prisma/schema.prisma`: التصنيفات، المنتجات (بصور متعددة)، الطلبات (بنود + COD)، الإعدادات.
+- الترحيل: `npm run db:push` / عبر `npx prisma migrate dev` للمشاريع الجديدة.
+- البيانات الأولية: `npm run db:seed`.
+- النسخة الاحتياطية المحلية من SQLite القديمة (اختياري): موجودة بعيداً عن المستودع.
+
+---
+
+## 📝 الترخيص
+مشروع خاص — غير مصرح بإعادة التوزيع دون إذن مسبق.
+
+---
+
+⚡ **SuMa MarKet** — متجرك المغربي من المحل إلى الباب، مع الدفع عند الاستلام.
