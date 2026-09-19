@@ -9,6 +9,14 @@ RUN npm ci --legacy-peer-deps
 FROM node:20-alpine AS builder
 WORKDIR /app
 RUN apk add --no-cache libc6-compat openssl
+
+# متغيرات تُحقن وقت البناء من المنصة (مثلاً Railway) لاستخدامها أثناء
+# توليد الصفحات الساكنة التي تلمس قاعدة البيانات. لا توجد أسرار في الصورة.
+ARG DATABASE_URL
+ARG DIRECT_URL
+ENV DATABASE_URL=$DATABASE_URL
+ENV DIRECT_URL=$DIRECT_URL
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
