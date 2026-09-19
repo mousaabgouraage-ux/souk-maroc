@@ -17,7 +17,7 @@ RUN npx prisma generate
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
-# ---- المرحلة النهائية (نحجّب: نسخة خفيفة) ----
+# ---- المرحلة النهائية (نسخة خفيفة) ----
 FROM node:20-alpine AS runner
 WORKDIR /app
 RUN apk add --no-cache libc6-compat openssl
@@ -34,12 +34,12 @@ COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/next.config.js ./next.config.js
 
-# نسخة احتياطية من قائمة prisma (للحجم الدائم الذي قد يغطي /app/prisma
-# بحجم فارغ في أول نشر على المنصات المدارة)
+# تطبيق مخطط قاعدة البيانات على المزود السحابي عند أول تشغيل
+# (آمن على البيانات: يضيف/يحدّث الجداول دون حذفها)
 RUN mkdir -p /app/.prisma-bootstrap && cp -r /app/prisma/. /app/.prisma-bootstrap/
 
-# أدلة قابلة للتخزين الدائم
-VOLUME ["/app/prisma", "/app/public/uploads"]
+# دليل قابل للتخزين الدائم للصور المرفوعة
+VOLUME ["/app/public/uploads"]
 
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
 RUN chmod +x ./docker-entrypoint.sh

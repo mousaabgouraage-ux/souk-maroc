@@ -7,16 +7,17 @@ services:
       - "127.0.0.1:3000:3000"
     environment:
       NODE_ENV: production
-      # مسار مطلق داخل الحاوية لضمان ثبات قاعدة البيانات عبر الحجم الدائم
-      DATABASE_URL: "file:/app/prisma/dev.db"
+      DATABASE_URL: "${DATABASE_URL}"
+      DIRECT_URL: "${DIRECT_URL}"
       ADMIN_EMAIL: "${ADMIN_EMAIL}"
       ADMIN_USERNAME: "${ADMIN_USERNAME}"
       ADMIN_PASSWORD: "${ADMIN_PASSWORD}"
       AUTH_SECRET: "${AUTH_SECRET}"
-    # تثبيت مباشر: ضع prisma/dev.db و صورك في مجلدات على الخادم،
-    # قاعدة البيانات والملفات تبقى محفوظة حتى بعد rebuild أو rebuild.
-    volumes:
-      - ./prisma:/app/prisma
-      - ./uploads:/app/public/uploads
     env_file:
       - .env
+    # تعديل الصور المرفوعة يُخزن على قرص دائم على الخادم
+    volumes:
+      - suma-uploads:/app/public/uploads
+
+volumes:
+  suma-uploads:
