@@ -10,6 +10,9 @@ import {
   ArrowLeft,
 } from "lucide-react";
 
+// تُقدَّم عند الطلب (لا أثناء البناء) لتفادي الاعتماد على قاعدة البيانات وقت التوليد
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const [featuredProducts, categories, allProducts] = await Promise.all([
     prisma.product.findMany({

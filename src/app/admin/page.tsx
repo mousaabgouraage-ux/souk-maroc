@@ -11,6 +11,9 @@ import {
   Truck,
 } from "lucide-react";
 
+// تُقدَّم عند الطلب (لا أثناء البناء) لتفادي الاعتماد على قاعدة البيانات وقت التوليد
+export const dynamic = "force-dynamic";
+
 export default async function AdminDashboardPage() {
   const [totalProducts, totalOrders, pendingOrders, deliveredOrders, orders] =
     await Promise.all([
