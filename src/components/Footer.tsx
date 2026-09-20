@@ -8,6 +8,7 @@ import {
   Phone,
   Mail,
   MapPin,
+  MessageCircle,
   CreditCard,
   Truck,
   ShieldCheck,
@@ -61,13 +62,23 @@ export default function Footer() {
             <h4 className="text-white font-semibold mb-4">تواصل معنا</h4>
             <ul className="space-y-3 text-sm">
               <li className="flex items-center gap-2">
-                <Phone size={16} /> 0600000000
+                <Phone size={16} /> 0776668738
               </li>
               <li className="flex items-center gap-2">
-                <Mail size={16} /> contact@sumamarket.com
+                <Mail size={16} /> sumamarket17@gmail.com
               </li>
               <li className="flex items-center gap-2">
-                <MapPin size={16} /> المغرب، الدار البيضاء
+                <MapPin size={16} /> سلا، المغرب
+              </li>
+              <li>
+                <a
+                  href="https://wa.me/212776668738"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 hover:text-brand-400 transition-colors"
+                >
+                  <MessageCircle size={16} /> واتساب: 0776668738
+                </a>
               </li>
             </ul>
           </div>
