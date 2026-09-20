@@ -47,7 +47,7 @@ export default function AdminLoginPage() {
             <Store size={32} />
           </div>
           <h1 className="text-2xl font-bold text-white">لوحة التحكم</h1>
-          <p className="text-gray-400 mt-1">سوما ماركت <span className="text-gray-600">| SuMa MarKet</span></p>
+          <p className="text-gray-400 mt-1">سامو ماركت <span className="text-gray-600">| SaMu MarKet</span></p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl p-8">

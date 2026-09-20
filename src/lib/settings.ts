@@ -35,9 +35,9 @@ export interface HomepageSettings {
 }
 
 export const DEFAULT_STORE_SETTINGS: StoreSettings = {
-  name: "سوما ماركت",
+  name: "سامو ماركت",
   logo: null,
-  tagline: "SuMa MarKet",
+  tagline: "SaMu MarKet",
   phone: "0776668738",
   whatsapp: "0776668738",
   email: "sumamarket17@gmail.com",

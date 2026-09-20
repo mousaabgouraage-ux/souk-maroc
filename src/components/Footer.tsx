@@ -20,8 +20,8 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-white font-bold text-lg mb-1">سوما ماركت</h3>
-            <p className="text-[10px] tracking-widest text-gray-500 font-semibold mb-4">SuMa MarKet</p>
+            <h3 className="text-white font-bold text-lg mb-1">سامو ماركت</h3>
+            <p className="text-[10px] tracking-widest text-gray-500 font-semibold mb-4">SaMu MarKet</p>
             <p className="text-sm leading-relaxed">
               متجرك الإلكتروني الموثوق لشراء أجود المنتجات بأسعار منافسة مع
               خدمة التوصيل لجميع المدن.
@@ -97,7 +97,7 @@ export default function Footer() {
             </span>
           </div>
           <p className="text-center text-sm mt-4 text-gray-500">
-            © {new Date().getFullYear()} سوما ماركت SuMa MarKet. جميع الحقوق محفوظة.
+            © {new Date().getFullYear()} سامو ماركت SaMu MarKet. جميع الحقوق محفوظة.
           </p>
         </div>
       </div>

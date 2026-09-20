@@ -1,6 +1,6 @@
-# 🛍️ سوما ماركت — SuMa MarKet
+# 🛍️ سامو ماركت — SaMu MarKet
 
-متجر إلكتروني متكامل بالأدمن **SuMa MarKet** مبنٍ بـ **Next.js 14 (App Router)** + **TypeScript** + **Tailwind CSS** + **Prisma** مع قاعدة بيانات **PostgreSQL** سحابية (Neon).
+متجر إلكتروني متكامل بالأدمن **SaMu MarKet** مبنٍ بـ **Next.js 14 (App Router)** + **TypeScript** + **Tailwind CSS** + **Prisma** مع قاعدة بيانات **PostgreSQL** سحابية (Neon).
 
 > مشروع مغربي للتجارة الإلكترونية بخيار **الدفع عند الاستلام (COD)** ولوحة تحكم إدارية كاملة بالعربية.
 
@@ -152,4 +152,4 @@ docker compose up -d --build
 
 ---
 
-⚡ **SuMa MarKet** — متجرك المغربي من المحل إلى الباب، مع الدفع عند الاستلام.
+⚡ **SaMu MarKet** — متجرك المغربي من المحل إلى الباب، مع الدفع عند الاستلام.

@@ -41,9 +41,9 @@ export default function Header() {
             </span>
             <div className="flex flex-col leading-tight">
               <span className="text-xl font-bold text-gray-900">
-                سوما <span className="text-brand-600">ماركت</span>
+                سامو <span className="text-brand-600">ماركت</span>
               </span>
-              <span className="text-[10px] tracking-widest text-gray-500 font-semibold">SuMa MarKet</span>
+              <span className="text-[10px] tracking-widest text-gray-500 font-semibold">SaMu MarKet</span>
             </div>
           </Link>
 

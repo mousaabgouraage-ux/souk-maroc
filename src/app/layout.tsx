@@ -5,8 +5,8 @@ import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 
 export const metadata: Metadata = {
-  title: "سوما ماركت - متجر إلكتروني",
-  description: "متجر سوما ماركت الإلكتروني - منتجات متنوعة بجودة عالية مع الدفع عند الاستلام",
+  title: "سامو ماركت - متجر إلكتروني",
+  description: "متجر سامو ماركت الإلكتروني - منتجات متنوعة بجودة عالية مع الدفع عند الاستلام",
 };
 
 export default function RootLayout({

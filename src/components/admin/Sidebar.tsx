@@ -49,7 +49,7 @@ export default function AdminLayout({
         <div className="p-6 border-b border-gray-800">
           <Link href="/admin" className="flex items-center gap-2">
             <Store size={22} className="text-brand-400" />
-            <span className="font-bold">سوما ماركت</span>
+            <span className="font-bold">سامو ماركت</span>
           </Link>
           <p className="text-gray-400 text-xs mt-1">لوحة التحكم</p>
         </div>
