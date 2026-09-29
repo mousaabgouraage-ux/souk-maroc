@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ShoppingCart, Menu, X, Store } from "lucide-react";
+import Image from "next/image";
+import { ShoppingCart, Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { getCart, cartCount } from "@/lib/cart";
 
@@ -36,9 +37,13 @@ export default function Header() {
           </button>
 
           <Link href="/" className="flex items-center gap-2">
-            <span className="bg-brand-600 text-white p-2 rounded-lg">
-              <Store size={22} />
-            </span>
+            <Image
+              src="/logo.jpg"
+              alt="سامو ماركت"
+              width={42}
+              height={42}
+              className="w-[42px] h-[42px] object-contain rounded-lg"
+            />
             <div className="flex flex-col leading-tight">
               <span className="text-xl font-bold text-gray-900">
                 سامو <span className="text-brand-600">ماركت</span>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -48,7 +49,13 @@ export default function AdminLayout({
       >
         <div className="p-6 border-b border-gray-800">
           <Link href="/admin" className="flex items-center gap-2">
-            <Store size={22} className="text-brand-400" />
+            <Image
+              src="/logo.jpg"
+              alt="سامو ماركت"
+              width={32}
+              height={32}
+              className="w-8 h-8 object-contain"
+            />
             <span className="font-bold">سامو ماركت</span>
           </Link>
           <p className="text-gray-400 text-xs mt-1">لوحة التحكم</p>
