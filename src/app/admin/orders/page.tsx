@@ -34,6 +34,9 @@ interface Order {
   total: number;
   createdAt: string;
   items: OrderItem[];
+  trackingCode?: string | null;
+  deliveryRef?: string | null;
+  deliveryStatus?: string | null;
 }
 
 const statusOptions = [
@@ -49,6 +52,7 @@ export default function AdminOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
+  const [rapColisNotice, setRapColisNotice] = useState<string | null>(null);
 
   const loadOrders = async () => {
     setLoading(true);
@@ -81,6 +85,11 @@ export default function AdminOrdersPage() {
 
   const getStatusConfig = (status: string) =>
     statusOptions.find((s) => s.value === status) || statusOptions[0];
+
+  const rapColisPending = () =>
+    setRapColisNotice(
+      "بانتظار تفعيل RapColis: سنفعّل الإرسال فور استلام وثائق الـ API من الدعم."
+    );
 
   return (
     <div>
@@ -226,6 +235,66 @@ export default function AdminOrdersPage() {
                           </button>
                         ))}
                       </div>
+                    </div>
+
+                    <div className="border-t pt-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-semibold text-gray-900 text-sm">
+                          التوصيل عبر RapColis
+                        </h4>
+                        {rapColisNotice && (
+                          <span className="text-xs text-amber-600 bg-amber-50 rounded-lg px-2 py-1 max-w-[60%] text-left">
+                            {rapColisNotice}
+                          </span>
+                        )}
+                      </div>
+
+                      {order.trackingCode ? (
+                        <div className="bg-gray-50 rounded-lg p-3 space-y-2 text-sm">
+                          <p className="flex items-center gap-2 text-gray-700">
+                            <Package size={14} className="text-brand-600" />
+                            رقم التتبع:
+                            <span
+                              className="font-semibold text-gray-900"
+                              dir="ltr"
+                            >
+                              {order.trackingCode}
+                            </span>
+                          </p>
+                          {order.deliveryRef && (
+                            <p className="text-gray-500 pr-6">
+                              مرجع الشركة: {order.deliveryRef}
+                            </p>
+                          )}
+                          {order.deliveryStatus && (
+                            <p className="flex items-center gap-2 text-gray-700">
+                              <Truck size={14} className="text-brand-600" />
+                              حالة التوصيل:{" "}
+                              <span className="text-gray-900">
+                                {order.deliveryStatus}
+                              </span>
+                            </p>
+                          )}
+                          <button
+                            onClick={rapColisPending}
+                            className="px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-gray-100 text-gray-600 hover:bg-gray-200"
+                          >
+                            تحديث حالة الشحنة
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between gap-2 bg-gray-50 rounded-lg p-3">
+                          <p className="text-sm text-gray-500">
+                            لم تُرسل هذه الشحنة إلى RapColis بعد.
+                          </p>
+                          <button
+                            onClick={rapColisPending}
+                            className="px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-brand-600 text-white hover:bg-brand-700"
+                          >
+                            إرسال إلى RapColis
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

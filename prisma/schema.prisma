@@ -62,6 +62,9 @@ model Order {
   deliveryFee   Float       @default(0)
   paymentMethod String      @default("COD")
   createdAt     DateTime    @default(now())
+  trackingCode  String?     @unique
+  deliveryRef   String?
+  deliveryStatus String?
   items         OrderItem[]
 }
 

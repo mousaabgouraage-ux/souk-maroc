@@ -75,6 +75,9 @@ export interface Order {
   paymentMethod: string;
   createdAt: Date;
   items?: OrderItem[];
+  trackingCode?: string | null;
+  deliveryRef?: string | null;
+  deliveryStatus?: string | null;
 }
 
 export interface StoreSettings {
