@@ -103,10 +103,24 @@ export async function sendOrderToRapColis(
       data = text || null;
     }
     if (!res.ok) {
+      const snippet = (typeof data === "string" ? data : JSON.stringify(data))
+        .replace(/[\r\n\t]+/g, " ")
+        .slice(0, 250);
+      const missing: string[] = [];
+      if (!process.env.RAPCOLIS_TOKEN_CLIENT?.trim())
+        missing.push("RAPCOLIS_TOKEN_CLIENT");
+      if (!process.env.RAPCOLIS_WEBHOOK_SECRET?.trim())
+        missing.push("RAPCOLIS_WEBHOOK_SECRET");
+      const details = [missing.length ? `ناقص: ${missing.join("، ")}` : ""]
+        .filter(Boolean)
+        .concat(snippet ? `رد الخادم: ${snippet}` : [])
+        .join(" — ");
       return {
         ok: false,
         status: res.status,
-        error: `فشل إرسال الشحنة إلى RapColis (${res.status})`,
+        error: `فشل إرسال الشحنة إلى RapColis (${res.status})${
+          details ? ` — ${details}` : ""
+        }`,
       };
     }
     return { ok: true, status: res.status, data };

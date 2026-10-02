@@ -48,3 +48,6 @@ dev-server*.log
 # user-uploaded media
 /public/uploads/*
 !/public/uploads/.gitkeep
+
+# local RapColis auth testing script (reads .env)
+/test-rapcolis-auth.ps1
