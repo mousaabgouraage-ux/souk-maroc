@@ -64,6 +64,7 @@ function buildPayload(order: RapColisOrder): Record<string, unknown> {
 /**
  * إرسال طلب إلى RapColis عبر Webhook (POST JSON خادمي فقط).
  * - تُقرأ الأسرار من البيئة فقط، ولا تُسجَّل ولا تُرسل في الحمولة.
+ * - المصادقة: Authorization (Bearer RAPCOLIS_TOKEN_CLIENT) + X-Webhook-Secret.
  * - بدون RAPCOLIS_WEBHOOK_URL تعيد ok=false دون أي شبكة.
  * - لا تُخفق أبداً على مستوى الرمي (يُمسك داخلياً).
  */
@@ -78,8 +79,12 @@ export async function sendOrderToRapColis(
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
+  const tokenClient = (process.env.RAPCOLIS_TOKEN_CLIENT || "").trim();
+  const webhookSecret = (process.env.RAPCOLIS_WEBHOOK_SECRET || "").trim();
   const apiKey = (process.env.RAPCOLIS_API_KEY || "").trim();
   const apiSecret = (process.env.RAPCOLIS_API_SECRET || "").trim();
+  if (tokenClient) headers["Authorization"] = `Bearer ${tokenClient}`;
+  if (webhookSecret) headers["X-Webhook-Secret"] = webhookSecret;
   if (apiKey) headers["X-Api-Key"] = apiKey;
   if (apiSecret) headers["X-Api-Secret"] = apiSecret;
 
