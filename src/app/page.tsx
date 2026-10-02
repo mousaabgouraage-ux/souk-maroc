@@ -2,31 +2,138 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import ProductCard from "@/components/ProductCard";
 import Image from "next/image";
+import type { ReactNode } from "react";
 import {
   Truck,
   ShieldCheck,
   BadgePercent,
   CreditCard,
   ArrowLeft,
+  Search,
 } from "lucide-react";
 
 // تُقدَّم عند الطلب (لا أثناء البناء) لتفادي الاعتماد على قاعدة البيانات وقت التوليد
 export const dynamic = "force-dynamic";
 
+function HomeSection({
+  title,
+  href,
+  tone = "white",
+  children,
+}: {
+  title: string;
+  href?: string;
+  tone?: "white" | "gray";
+  children: ReactNode;
+}) {
+  return (
+    <section className={`${tone === "gray" ? "bg-gray-50" : ""} py-12`}>
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
+          {href && (
+            <Link
+              href={href}
+              className="text-brand-600 font-medium hover:underline inline-flex items-center gap-1"
+            >
+              عرض الكل <ArrowLeft size={16} />
+            </Link>
+          )}
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {children}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+async function getCategorySection(slug: string, take = 4) {
+  return prisma.category.findUnique({
+    where: { slug },
+    include: {
+      products: {
+        where: { inStock: true },
+        include: { category: true },
+        take,
+      },
+    },
+  });
+}
+
 export default async function HomePage() {
-  const [featuredProducts, categories, allProducts] = await Promise.all([
-    prisma.product.findMany({
-      where: { featured: true, inStock: true },
-      include: { category: true },
-      take: 8,
-    }),
-    prisma.category.findMany({ include: { _count: { select: { products: true } } } }),
-    prisma.product.findMany({
-      where: { inStock: true },
-      include: { category: true },
-      take: 4,
-    }),
-  ]);
+  const [discounted, bestSellerRows, newArrivals, featuredProducts, homeCat, clothingCat, accessoriesCat] =
+    await Promise.all([
+      prisma.product.findMany({
+        where: { inStock: true, oldPrice: { gt: 0 } },
+        include: { category: true },
+        orderBy: { createdAt: "desc" },
+        take: 8,
+      }),
+      prisma.orderItem.groupBy({
+        by: ["productId"],
+        _sum: { quantity: true },
+        orderBy: { _sum: { quantity: "desc" } },
+        take: 8,
+      }),
+      prisma.product.findMany({
+        where: { inStock: true },
+        include: { category: true },
+        orderBy: { createdAt: "desc" },
+        take: 8,
+      }),
+      prisma.product.findMany({
+        where: { featured: true, inStock: true },
+        include: { category: true },
+        orderBy: { createdAt: "desc" },
+        take: 8,
+      }),
+      getCategorySection("home-kitchen"),
+      getCategorySection("clothing"),
+      getCategorySection("accessories"),
+    ]);
+
+  const bestSellerIds = bestSellerRows.map((r) => r.productId);
+  const bestSellerQty = new Map(
+    bestSellerRows.map((r) => [r.productId, r._sum.quantity || 0])
+  );
+  const bestSellers = bestSellerIds.length
+    ? (
+        await prisma.product.findMany({
+          where: { id: { in: bestSellerIds }, inStock: true },
+          include: { category: true },
+        })
+      ).sort(
+        (a, b) => (bestSellerQty.get(b.id) || 0) - (bestSellerQty.get(a.id) || 0)
+      )
+    : [];
+
+  const productSection = (
+    title: string,
+    href: string,
+    tone: "white" | "gray",
+    products: typeof discounted
+  ) =>
+    products.length ? (
+      <HomeSection title={title} href={href} tone={tone}>
+        {products.map((p) => (
+          <ProductCard key={p.id} product={p} />
+        ))}
+      </HomeSection>
+    ) : null;
+
+  const categorySection = (
+    title: string,
+    slug: string,
+    category: typeof homeCat
+  ) =>
+    category && category.products.length ? (
+      <HomeSection title={title} href={`/products?category=${slug}`}>
+        {category.products.map((p) => (
+          <ProductCard key={p.id} product={p} />
+        ))}
+      </HomeSection>
+    ) : null;
 
   return (
     <div>
@@ -99,65 +206,59 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Categories */}
-      <section id="categories" className="max-w-7xl mx-auto px-4 py-14">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">الفئات</h2>
-          <Link href="/products" className="text-brand-600 font-medium hover:underline inline-flex items-center gap-1">
-            عرض الكل <ArrowLeft size={16} />
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {categories.map((c) => (
-            <Link
-              key={c.id}
-              href={`/products?category=${c.slug}`}
-              className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-4 text-center group"
+      {/* 🔥 عروض اليوم */}
+      {productSection("🔥 عروض اليوم", "/products", "gray", discounted)}
+
+      {/* ⭐ الأكثر مبيعًا */}
+      {productSection("⭐ الأكثر مبيعًا", "/products", "white", bestSellers)}
+
+      {/* 🆕 وصل حديثًا */}
+      {productSection("🆕 وصل حديثًا", "/products", "gray", newArrivals)}
+
+      {/* 🏠 للمنزل */}
+      {categorySection("🏠 للمنزل", "home-kitchen", homeCat)}
+
+      {/* 👕 الملابس */}
+      {categorySection("👕 الملابس", "clothing", clothingCat)}
+
+      {/* 🎧 الإكسسوارات */}
+      {categorySection("🎧 الإكسسوارات", "accessories", accessoriesCat)}
+
+      {/* 🔍 خانة البحث عن المنتجات */}
+      <section className="bg-brand-50 py-12">
+        <div className="max-w-2xl mx-auto px-4 text-center">
+          <h2 className="text-2xl font-bold text-gray-900">
+            🔍 ابحث عن منتجك
+          </h2>
+          <p className="text-gray-500 mt-2">
+            اكتب اسم المنتج واضغط بحث للعثور عليه مباشرة
+          </p>
+          <form
+            action="/products"
+            method="get"
+            className="mt-6 flex flex-col sm:flex-row gap-2"
+          >
+            <input
+              type="text"
+              name="search"
+              placeholder="مثال: سماعات، ساعة، حقيبة..."
+              className="input-field flex-1 text-right"
+            />
+            <button
+              type="submit"
+              className="bg-brand-600 text-white px-6 py-3 rounded-lg hover:bg-brand-700 transition-colors inline-flex items-center justify-center gap-2 font-medium"
             >
-              <div className="text-3xl mb-2">{c._count.products}</div>
-              <h3 className="font-semibold text-gray-900 group-hover:text-brand-600 transition-colors">
-                {c.name}
-              </h3>
-              <p className="text-xs text-gray-400 mt-1">منتج</p>
-            </Link>
-          ))}
+              <Search size={18} /> بحث
+            </button>
+          </form>
         </div>
       </section>
 
-      {/* Featured Products */}
-      <section className="bg-gray-50 py-14">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">منتجات مميزة</h2>
-            <Link href="/products" className="text-brand-600 font-medium hover:underline inline-flex items-center gap-1">
-              عرض الكل <ArrowLeft size={16} />
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {featuredProducts.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Latest Products */}
-      <section className="max-w-7xl mx-auto px-4 py-14">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">أحدث المنتجات</h2>
-          <Link href="/products" className="text-brand-600 font-medium hover:underline inline-flex items-center gap-1">
-            عرض الكل <ArrowLeft size={16} />
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {allProducts.map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
-        </div>
-      </section>
+      {/* ❤️ اختيارات SaMu-MarKet */}
+      {productSection("❤️ اختيارات SaMu-MarKet", "/products", "white", featuredProducts)}
 
       {/* CTA */}
-      <section className="max-w-7xl mx-auto px-4 pb-14">
+      <section className="max-w-7xl mx-auto px-4 py-14">
         <div className="bg-gradient-to-l from-brand-600 to-brand-800 rounded-2xl p-8 lg:p-14 text-white text-center">
           <h2 className="text-3xl font-bold mb-3">جاهز للطلب؟</h2>
           <p className="text-white/80 mb-6 max-w-lg mx-auto">
