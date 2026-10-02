@@ -37,6 +37,7 @@ interface Order {
   trackingCode?: string | null;
   deliveryRef?: string | null;
   deliveryStatus?: string | null;
+  deliverySent?: boolean;
 }
 
 const statusOptions = [
@@ -53,6 +54,9 @@ export default function AdminOrdersPage() {
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
   const [rapColisNotice, setRapColisNotice] = useState<string | null>(null);
+  const [sendingDeliveryId, setSendingDeliveryId] = useState<number | null>(
+    null
+  );
 
   const loadOrders = async () => {
     setLoading(true);
@@ -90,6 +94,32 @@ export default function AdminOrdersPage() {
     setRapColisNotice(
       "بانتظار تفعيل RapColis: سنفعّل الإرسال فور استلام وثائق الـ API من الدعم."
     );
+
+  const sendToRapColis = async (orderId: number) => {
+    setRapColisNotice(null);
+    setSendingDeliveryId(orderId);
+    try {
+      const res = await fetch(`/api/orders/${orderId}/delivery`, {
+        method: "POST",
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setOrders((prev) =>
+          prev.map((o) =>
+            o.id === orderId
+              ? { ...o, deliverySent: true, deliveryStatus: "SENT" }
+              : o
+          )
+        );
+        setRapColisNotice("تم إرسال الشحنة إلى RapColis بنجاح ✓");
+      } else {
+        setRapColisNotice(data?.error || "فشل الإرسال إلى RapColis");
+      }
+    } catch {
+      setRapColisNotice("تعذّر الاتصال بالخادم أثناء الإرسال إلى RapColis");
+    }
+    setSendingDeliveryId(null);
+  };
 
   return (
     <div>
@@ -249,18 +279,24 @@ export default function AdminOrdersPage() {
                         )}
                       </div>
 
-                      {order.trackingCode ? (
+                      {order.trackingCode || order.deliverySent ? (
                         <div className="bg-gray-50 rounded-lg p-3 space-y-2 text-sm">
                           <p className="flex items-center gap-2 text-gray-700">
-                            <Package size={14} className="text-brand-600" />
-                            رقم التتبع:
-                            <span
-                              className="font-semibold text-gray-900"
-                              dir="ltr"
-                            >
-                              {order.trackingCode}
-                            </span>
+                            <CheckCircle2 size={14} className="text-brand-600" />
+                            تم إرسال الشحنة إلى RapColis
                           </p>
+                          {order.trackingCode && (
+                            <p className="flex items-center gap-2 text-gray-700">
+                              <Package size={14} className="text-brand-600" />
+                              رقم التتبع:
+                              <span
+                                className="font-semibold text-gray-900"
+                                dir="ltr"
+                              >
+                                {order.trackingCode}
+                              </span>
+                            </p>
+                          )}
                           {order.deliveryRef && (
                             <p className="text-gray-500 pr-6">
                               مرجع الشركة: {order.deliveryRef}
@@ -288,10 +324,15 @@ export default function AdminOrdersPage() {
                             لم تُرسل هذه الشحنة إلى RapColis بعد.
                           </p>
                           <button
-                            onClick={rapColisPending}
-                            className="px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-brand-600 text-white hover:bg-brand-700"
+                            onClick={() => sendToRapColis(order.id)}
+                            disabled={sendingDeliveryId === order.id}
+                            className="px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            إرسال إلى RapColis
+                            {sendingDeliveryId === order.id ? (
+                              <Loader2 size={14} className="animate-spin" />
+                            ) : (
+                              "إرسال إلى RapColis"
+                            )}
                           </button>
                         </div>
                       )}

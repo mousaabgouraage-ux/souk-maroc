@@ -78,6 +78,7 @@ export interface Order {
   trackingCode?: string | null;
   deliveryRef?: string | null;
   deliveryStatus?: string | null;
+  deliverySent?: boolean;
 }
 
 export interface StoreSettings {

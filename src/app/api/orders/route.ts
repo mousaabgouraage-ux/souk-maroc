@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { CartItem } from "@/lib/cart";
 import { getStoreSettings, getDeliveryFeeForCity } from "@/lib/settings";
+import {
+  isRapColisConfigured,
+  sendOrderToRapColis,
+} from "@/lib/rapcolis";
 
 export async function GET(request: NextRequest) {
   const orders = await prisma.order.findMany({
@@ -81,8 +85,21 @@ export async function POST(request: NextRequest) {
           })),
         },
       },
-      include: { items: true },
+      include: { items: { include: { product: true } } },
     });
+
+    // إرسال الطلب الجديد إلى RapColis تلقائياً (لا يعطّل إتمام الطلب عند الفشل)
+    if (isRapColisConfigured()) {
+      const result = await sendOrderToRapColis(order);
+      if (result.ok) {
+        await prisma.order.update({
+          where: { id: order.id },
+          data: { deliverySent: true, deliveryStatus: "SENT" },
+        });
+      } else {
+        console.error("RapColis auto-send failed:", result.error);
+      }
+    }
 
     return NextResponse.json(order, { status: 201 });
   } catch (error) {

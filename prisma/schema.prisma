@@ -65,6 +65,7 @@ model Order {
   trackingCode  String?     @unique
   deliveryRef   String?
   deliveryStatus String?
+  deliverySent  Boolean     @default(false)
   items         OrderItem[]
 }
 
