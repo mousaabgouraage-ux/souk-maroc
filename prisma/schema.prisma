@@ -13,6 +13,7 @@ model Category {
   name      String
   slug      String    @unique
   imageUrl  String?
+  cloudinaryPublicId String?
   isVisible Boolean   @default(true)
   products  Product[]
   createdAt DateTime  @default(now())
@@ -26,6 +27,7 @@ model Product {
   price      Float
   oldPrice   Float?
   imageUrl   String?
+  cloudinaryPublicId String?
   inStock    Boolean        @default(true)
   stock      Int            @default(0)
   featured   Boolean        @default(false)
@@ -84,3 +86,15 @@ model StoreSetting {
   key   String @unique
   value String
 }
+
+model UploadedFile {
+  id        String   @id @default(cuid())
+  mimeType  String
+  data      Bytes
+  createdAt DateTime @default(now())
+}
+
+
+
+
+
