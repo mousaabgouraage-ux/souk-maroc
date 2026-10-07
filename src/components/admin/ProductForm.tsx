@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -97,10 +97,10 @@ export default function ProductForm({ initialData }: { initialData?: ProductData
       if (res.ok) {
         setForm((prev) => ({ ...prev, imageUrl: data.url }));
       } else {
-        alert(data.error || "Ø®Ø·Ø£ ÙÙŠ Ø±ÙØ¹ Ø§Ù„ØµÙˆØ±Ø©");
+        alert(data.error || "خطأ في رفع الصورة");
       }
     } catch {
-      alert("Ø®Ø·Ø£ ÙÙŠ Ø±ÙØ¹ Ø§Ù„ØµÙˆØ±Ø©");
+      alert("خطأ في رفع الصورة");
     }
     setUploading(false);
   };
@@ -135,14 +135,14 @@ export default function ProductForm({ initialData }: { initialData?: ProductData
 
       if (!res.ok) {
         const data = await res.json();
-        alert(data.error || "Ø­Ø¯Ø« Ø®Ø·Ø£");
+        alert(data.error || "حدث خطأ");
         setLoading(false);
         return;
       }
 
       router.push("/admin/products");
     } catch {
-      alert("Ø­Ø¯Ø« Ø®Ø·Ø£ Ù…Ø§");
+      alert("حدث خطأ ما");
       setLoading(false);
     }
   };
@@ -150,11 +150,11 @@ export default function ProductForm({ initialData }: { initialData?: ProductData
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="bg-white rounded-xl shadow-sm p-6">
-        <h2 className="text-lg font-bold text-gray-900 mb-4">Ù…Ø¹Ù„ÙˆÙ…Ø§Øª Ø§Ù„Ù…Ù†ØªØ¬</h2>
+        <h2 className="text-lg font-bold text-gray-900 mb-4">معلومات المنتج</h2>
         <div className="grid sm:grid-cols-2 gap-4">
           <div className="sm:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Ø§Ø³Ù… Ø§Ù„Ù…Ù†ØªØ¬ *
+              اسم المنتج *
             </label>
             <input
               type="text"
@@ -162,13 +162,13 @@ export default function ProductForm({ initialData }: { initialData?: ProductData
               required
               value={form.name}
               onChange={handleChange}
-              placeholder="Ù…Ø«Ø§Ù„: Ø³Ù…Ø§Ø¹Ø§Øª Ø¨Ù„ÙˆØªÙˆØ« Ù„Ø§Ø³Ù„ÙƒÙŠØ©"
+              placeholder="مثال: سماعات بلوتوث لاسلكية"
               className="input-field"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Ø§Ù„Ø±Ø§Ø¨Ø· (Slug) *
+              الرابط (Slug) *
             </label>
             <input
               type="text"
@@ -183,7 +183,7 @@ export default function ProductForm({ initialData }: { initialData?: ProductData
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Ø§Ù„ÙØ¦Ø© *
+              الفئة *
             </label>
             <select
               name="categoryId"
@@ -192,7 +192,7 @@ export default function ProductForm({ initialData }: { initialData?: ProductData
               onChange={handleChange}
               className="input-field"
             >
-              <option value="">Ø§Ø®ØªØ± Ø§Ù„ÙØ¦Ø©</option>
+              <option value="">اختر الفئة</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -202,7 +202,7 @@ export default function ProductForm({ initialData }: { initialData?: ProductData
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Ø§Ù„Ø³Ø¹Ø± (Ø¯Ø±Ù‡Ù…) *
+              السعر (درهم) *
             </label>
             <input
               type="number"
@@ -218,7 +218,7 @@ export default function ProductForm({ initialData }: { initialData?: ProductData
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Ø§Ù„Ø³Ø¹Ø± Ø§Ù„Ù‚Ø¯ÙŠÙ… (Ø§Ø®ØªÙŠØ§Ø±ÙŠ)
+              السعر القديم (اختياري)
             </label>
             <input
               type="number"
@@ -233,14 +233,14 @@ export default function ProductForm({ initialData }: { initialData?: ProductData
           </div>
           <div className="sm:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Ø§Ù„ÙˆØµÙ (Ø§Ø®ØªÙŠØ§Ø±ÙŠ)
+              الوصف (اختياري)
             </label>
             <textarea
               name="description"
               rows={3}
               value={form.description}
               onChange={handleChange}
-              placeholder="ÙˆØµÙ Ø§Ù„Ù…Ù†ØªØ¬..."
+              placeholder="وصف المنتج..."
               className="input-field resize-none"
             />
           </div>
@@ -255,7 +255,7 @@ export default function ProductForm({ initialData }: { initialData?: ProductData
               className="w-4 h-4 text-brand-600 rounded"
             />
             <span className="text-sm font-medium text-gray-700">
-              Ù…ØªÙˆÙØ± ÙÙŠ Ø§Ù„Ù…Ø®Ø²ÙˆÙ†
+              متوفر في المخزون
             </span>
           </label>
           <label className="flex items-center gap-2 cursor-pointer">
@@ -267,23 +267,23 @@ export default function ProductForm({ initialData }: { initialData?: ProductData
               className="w-4 h-4 text-brand-600 rounded"
             />
             <span className="text-sm font-medium text-gray-700">
-              Ù…Ù†ØªØ¬ Ù…Ù…ÙŠØ² (ÙŠØ¸Ù‡Ø± ÙÙŠ Ø§Ù„ØµÙØ­Ø© Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ©)
+              منتج مميز (يظهر في الصفحة الرئيسية)
             </span>
           </label>
         </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm p-6">
-        <h2 className="text-lg font-bold text-gray-900 mb-4">ØµÙˆØ±Ø© Ø§Ù„Ù…Ù†ØªØ¬</h2>
+        <h2 className="text-lg font-bold text-gray-900 mb-4">صورة المنتج</h2>
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Ø±ÙØ¹ ØµÙˆØ±Ø©
+              رفع صورة
             </label>
             <label className="flex items-center justify-center gap-2 p-6 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-brand-500 hover:bg-brand-50/30 transition-colors">
               <Upload size={20} className="text-gray-400" />
               <span className="text-sm text-gray-500">
-                {uploading ? "Ø¬Ø§Ø±ÙŠ Ø§Ù„Ø±ÙØ¹..." : "Ø§Ø¶ØºØ· Ù„Ø§Ø®ØªÙŠØ§Ø± ØµÙˆØ±Ø©"}
+                {uploading ? "جاري الرفع..." : "اضغط لاختيار صورة"}
               </span>
               <input
                 type="file"
@@ -296,7 +296,7 @@ export default function ProductForm({ initialData }: { initialData?: ProductData
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Ø£Ùˆ Ø£Ø¯Ø®Ù„ Ø±Ø§Ø¨Ø· Ø§Ù„ØµÙˆØ±Ø©
+              أو أدخل رابط الصورة
             </label>
             <input
               type="url"
@@ -314,7 +314,7 @@ export default function ProductForm({ initialData }: { initialData?: ProductData
             <div className="relative w-48 h-48 rounded-lg overflow-hidden border-2 border-gray-200">
               <Image
                 src={form.imageUrl}
-                alt="Ù…Ø¹Ø§ÙŠÙ†Ø©"
+                alt="معاينة"
                 fill
                 className="object-cover"
                 sizes="192px"
@@ -340,17 +340,17 @@ export default function ProductForm({ initialData }: { initialData?: ProductData
           {loading ? (
             <>
               <Loader2 size={18} className="animate-spin" />
-              {initialData ? "Ø¬Ø§Ø±ÙŠ Ø§Ù„ØªØ­Ø¯ÙŠØ«..." : "Ø¬Ø§Ø±ÙŠ Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡..."}
+              {initialData ? "جاري التحديث..." : "جاري الإنشاء..."}
             </>
           ) : initialData ? (
-            "ØªØ­Ø¯ÙŠØ« Ø§Ù„Ù…Ù†ØªØ¬"
+            "تحديث المنتج"
           ) : (
-            "Ø¥Ù†Ø´Ø§Ø¡ Ø§Ù„Ù…Ù†ØªØ¬"
+            "إنشاء المنتج"
           )}
         </button>
         <Link href="/admin/products" className="btn-secondary">
           <ArrowRight size={18} />
-          Ø¥Ù„ØºØ§Ø¡
+          إلغاء
         </Link>
       </div>
     </form>
