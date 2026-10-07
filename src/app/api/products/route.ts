@@ -48,36 +48,45 @@ export async function POST(request: NextRequest) {
       categoryId,
     } = body;
 
-    if (!name || !slug || !price || !categoryId) {
-      return NextResponse.json(
-        { error: "الاسم، السعر، والفئة مطلوبة" },
-        { status: 400 }
-      );
+    if (!name || !price || !categoryId) {
+      return NextResponse.json({ error: "البيانات غير كاملة" }, { status: 400 });
     }
 
-    const existing = await prisma.product.findUnique({ where: { slug } });
-    if (existing) {
-      return NextResponse.json(
-        { error: "هذا الرابط موجود بالفعل" },
-        { status: 400 }
-      );
+    let finalSlug = slug || "";
+    if (!finalSlug) {
+      const normalized = name
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+      finalSlug = normalized
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-")
+        .trim();
+    }
+    if (!finalSlug || finalSlug === "-") {
+      finalSlug = "product-" + Math.random().toString(36).substring(2, 8);
+    }
+    let uniqueSlug = finalSlug;
+    let i = 1;
+    while (true) {
+      const existing = await prisma.product.findUnique({ where: { slug: uniqueSlug } });
+      if (!existing) break;
+      uniqueSlug = finalSlug + "-" + i++;
+      if (i > 30) break;
     }
 
-    const stockNum =
-      stock !== undefined && stock !== "" ? Number(stock) : 0;
+    const stockNum = stock !== undefined && stock !== "" ? Number(stock) : 0;
     const product = await prisma.product.create({
       data: {
         name,
-        slug,
+        slug: uniqueSlug,
         description: description || null,
         price: Number(price),
         oldPrice: oldPrice ? Number(oldPrice) : null,
         imageUrl: imageUrl || null,
         stock: Number.isFinite(stockNum) ? stockNum : 0,
-        inStock:
-          inStock !== undefined
-            ? Boolean(inStock)
-            : stockNum > 0,
+        inStock: inStock !== undefined ? Boolean(inStock) : stockNum > 0,
         featured: Boolean(featured),
         isNew: Boolean(isNew),
         isVisible: isVisible !== undefined ? Boolean(isVisible) : true,
@@ -98,6 +107,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(product, { status: 201 });
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: "خطأ في إنشاء المنتج" }, { status: 500 });
+    return NextResponse.json({ error: "حدث خطأ أثناء إضافة المنتج" }, { status: 500 });
   }
 }
