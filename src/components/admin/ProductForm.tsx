@@ -6,6 +6,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Loader2, Upload, X } from "lucide-react";
 
+const MAX_IMAGES = 6;
+
 interface Category {
   id: number;
   name: string;
@@ -20,6 +22,7 @@ interface ProductData {
   price: string;
   oldPrice: string;
   imageUrl: string;
+  images?: string[];
   inStock: boolean;
   featured: boolean;
   categoryId: string;
@@ -30,6 +33,7 @@ export default function ProductForm({ initialData }: { initialData?: ProductData
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [urlInput, setUrlInput] = useState("");
 
   const [form, setForm] = useState<ProductData>(
     initialData || {
@@ -44,6 +48,14 @@ export default function ProductForm({ initialData }: { initialData?: ProductData
       categoryId: "",
     }
   );
+
+  const [images, setImages] = useState<string[]>(() => {
+    if (initialData?.images && initialData.images.length > 0) {
+      return initialData.images.filter(Boolean);
+    }
+    if (initialData?.imageUrl) return [initialData.imageUrl];
+    return [];
+  });
 
   useEffect(() => {
     fetch("/api/categories")
@@ -81,28 +93,69 @@ export default function ProductForm({ initialData }: { initialData?: ProductData
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    e.target.value = "";
+    if (files.length === 0) return;
+
+    const remaining = MAX_IMAGES - images.length;
+    if (remaining <= 0) {
+      alert(`الحد الأقصى ${MAX_IMAGES} صور`);
+      return;
+    }
+    const toUpload = files.slice(0, remaining);
+    if (files.length > remaining) {
+      alert(`سيتم رفع ${remaining} صور فقط (الحد الأقصى ${MAX_IMAGES})`);
+    }
 
     setUploading(true);
-    const formData = new FormData();
-    formData.append("file", file);
+    const uploaded: string[] = [];
 
-    try {
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setForm((prev) => ({ ...prev, imageUrl: data.url }));
-      } else {
-        alert(data.error || "خطأ في رفع الصورة");
+    for (const file of toUpload) {
+      const formData = new FormData();
+      formData.append("file", file);
+      try {
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+        const data = await res.json();
+        if (res.ok && data.url) {
+          uploaded.push(data.url);
+        } else {
+          alert(data.error || "خطأ في رفع الصورة");
+        }
+      } catch {
+        alert("خطأ في رفع الصورة");
       }
-    } catch {
-      alert("خطأ في رفع الصورة");
+    }
+
+    if (uploaded.length > 0) {
+      setImages((prev) => [...prev, ...uploaded].slice(0, MAX_IMAGES));
     }
     setUploading(false);
+  };
+
+  const addImageUrl = () => {
+    const url = urlInput.trim();
+    if (!url) return;
+    if (images.length >= MAX_IMAGES) {
+      alert(`الحد الأقصى ${MAX_IMAGES} صور`);
+      return;
+    }
+    setImages((prev) => [...prev, url]);
+    setUrlInput("");
+  };
+
+  const removeImage = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const makeMain = (index: number) => {
+    setImages((prev) => {
+      const copy = [...prev];
+      const [item] = copy.splice(index, 1);
+      return [item, ...copy];
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -115,7 +168,8 @@ export default function ProductForm({ initialData }: { initialData?: ProductData
       description: form.description,
       price: Number(form.price),
       oldPrice: form.oldPrice ? Number(form.oldPrice) : null,
-      imageUrl: form.imageUrl || null,
+      imageUrl: images[0] || null,
+      images: images,
       inStock: form.inStock,
       featured: form.featured,
       categoryId: Number(form.categoryId),
@@ -274,59 +328,93 @@ export default function ProductForm({ initialData }: { initialData?: ProductData
       </div>
 
       <div className="bg-white rounded-xl shadow-sm p-6">
-        <h2 className="text-lg font-bold text-gray-900 mb-4">صورة المنتج</h2>
+        <h2 className="text-lg font-bold text-gray-900 mb-1">صور المنتج</h2>
+        <p className="text-sm text-gray-500 mb-4">
+          حتى {MAX_IMAGES} صور ({images.length}/{MAX_IMAGES}) — الصورة الأولى هي الرئيسية
+        </p>
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              رفع صورة
+              رفع صور
             </label>
             <label className="flex items-center justify-center gap-2 p-6 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-brand-500 hover:bg-brand-50/30 transition-colors">
               <Upload size={20} className="text-gray-400" />
               <span className="text-sm text-gray-500">
-                {uploading ? "جاري الرفع..." : "اضغط لاختيار صورة"}
+                {uploading ? "جاري الرفع..." : "اضغط لاختيار عدة صور"}
               </span>
               <input
                 type="file"
                 accept="image/*"
+                multiple
                 onChange={handleImageUpload}
                 className="hidden"
-                disabled={uploading}
+                disabled={uploading || images.length >= MAX_IMAGES}
               />
             </label>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              أو أدخل رابط الصورة
+              أو أدخل رابط صورة
             </label>
-            <input
-              type="url"
-              name="imageUrl"
-              dir="ltr"
-              value={form.imageUrl}
-              onChange={handleChange}
-              placeholder="https://example.com/image.jpg"
-              className="input-field text-left text-sm"
-            />
+            <div className="flex gap-2">
+              <input
+                type="url"
+                dir="ltr"
+                value={urlInput}
+                onChange={(e) => setUrlInput(e.target.value)}
+                placeholder="https://example.com/image.jpg"
+                className="input-field text-left text-sm"
+              />
+              <button
+                type="button"
+                onClick={addImageUrl}
+                className="btn-secondary whitespace-nowrap"
+              >
+                إضافة
+              </button>
+            </div>
           </div>
         </div>
-        {form.imageUrl && (
-          <div className="mt-4 relative inline-block">
-            <div className="relative w-48 h-48 rounded-lg overflow-hidden border-2 border-gray-200">
-              <Image
-                src={form.imageUrl}
-                alt="معاينة"
-                fill
-                className="object-cover"
-                sizes="192px"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() => setForm((prev) => ({ ...prev, imageUrl: "" }))}
-              className="absolute -top-2 -left-2 bg-red-600 text-white p-1 rounded-full hover:bg-red-700 transition-colors"
-            >
-              <X size={14} />
-            </button>
+
+        {images.length > 0 && (
+          <div className="mt-4 flex flex-wrap gap-4">
+            {images.map((img, index) => (
+              <div key={`${img}-${index}`} className="relative">
+                <div
+                  className={`relative w-32 h-32 rounded-lg overflow-hidden border-2 ${
+                    index === 0 ? "border-brand-600" : "border-gray-200"
+                  }`}
+                >
+                  <Image
+                    src={img}
+                    alt={`صورة ${index + 1}`}
+                    fill
+                    className="object-cover"
+                    sizes="128px"
+                  />
+                </div>
+                {index === 0 ? (
+                  <span className="absolute bottom-1 right-1 bg-brand-600 text-white text-xs px-2 py-0.5 rounded">
+                    رئيسية
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => makeMain(index)}
+                    className="absolute bottom-1 right-1 bg-black/60 text-white text-xs px-2 py-0.5 rounded hover:bg-black/80"
+                  >
+                    جعلها رئيسية
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => removeImage(index)}
+                  className="absolute -top-2 -left-2 bg-red-600 text-white p-1 rounded-full hover:bg-red-700 transition-colors"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -334,7 +422,7 @@ export default function ProductForm({ initialData }: { initialData?: ProductData
       <div className="flex gap-3">
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || uploading}
           className="btn-primary"
         >
           {loading ? (
